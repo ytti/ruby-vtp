@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = s.name
   s.files             = `git ls-files`.split("\n")
   s.executables       = %w( vtpd )
-  s.require_path      = 'lib'
+  s.require_path      = 'lib/vtp'
 
   s.required_ruby_version =            '>= 1.9.3'
   s.add_runtime_dependency 'slop',     '~> 3.5'
