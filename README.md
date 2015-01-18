@@ -24,12 +24,48 @@ And you're pinging through what ever lab topology is in your lab core connecting
 
 # Library use
     require 'vtp'
-    VTP.capture do |pkt|
-      pkt.vlan.each do |vlan|
-         provision_vlan vlan.id
-         provision_namespace vlan.id, vlan.name
+    require 'open3'
+    class NSPOC
+      def initialize
+        @ns = {}
+        run
+      end
+
+      def run
+         VTP.capture do |pkt|
+           new = {}
+           pkt.vlan.each do |vlan|
+             next unless vlan.type == 1
+             new[vlan.name] = vlan.id
+           end
+           compare new
+        end
+      end
+
+      def compare new
+        old_ns  = @ns.keys
+        new_ns  = new.keys
+        (old_ns-new_ns).each { |ns| remove ns, @ns[ns] }
+        (new_ns-old_ns).each { |ns| add ns, new[ns] }
+        @ns = new.dup
+      end
+
+      def add name, vlan
+        ip 'netns', 'add', name
+        ip 'link', 'add', 'link', 'eth0', 'netns', name, 'name', 'eth1', 'type', 'vlan', 'id', vlan.to_s
+      end
+
+      def remove name, vlan
+        ip 'netns', 'delete', name
+      end
+
+      def ip *args
+        Open3.popen3('ip', *args) do |stdin, stdout, stderr, wait_thr|
+          wait_thr.join
+        end
       end
     end
+    NSPOC.new
 
 # CLI use
     root@kone:~/foo# vtpd --help
