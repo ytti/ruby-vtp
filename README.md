@@ -37,10 +37,12 @@ And you're pinging through what ever lab topology is in your lab core connecting
         -d, --debug          turn on debugging
         -f, --file           store to file
         -i, --interface      specify interface to listen, instead of eth0
+        -n, --domain         if set, injects advertisement request on start
         -h, --help           Display this help message.
 
-vtpd -f /etc/vtp.json     # would run in background and store vtp information in file
-vtpd -d                   # would run in foreground and print vtp infromation
+    # vtpd -f /etc/vtp.json     # would run in background and store vtp information in file
+    # vtpd -d                   # would run in foreground and print vtp infromation
+    # vtpd -d --domain 'sux'    # requets VTP database immediately on start from domain 'sux'
 
 # JSON format
     root@kone:~/foo/ruby-vtp# cat /tmp/vtp.json
@@ -61,6 +63,3 @@ vtpd -d                   # would run in foreground and print vtp infromation
 
 # TODO
   1. support vtp1 or vtp3? (vtp1 at least will work by just removing the version check)
-  2. poll for latest vlan database, not sure how to do this, right now, on
-     initial start, you won't know the VLANs, the database is only sent on
-     changes

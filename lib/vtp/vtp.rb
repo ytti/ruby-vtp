@@ -1,5 +1,6 @@
 require 'ffi/pcap'
 require_relative 'packet'
+require_relative 'query'
 
 class VTP
   INTERFACE = 'eth0'
@@ -14,13 +15,18 @@ class VTP
   end
 
   def initialize opts
-    interface = opts.delete :interface
-    filter    = opts.delete :filter
-    @debug    = opts.delete :debug
-    interface ||= INTERFACE
-    filter    ||= FILTER
-    @cap = FFI::PCap::Live.new dev: interface, timeout: 1, promisc: false, handler: FFI::PCap::Handler
+    @interface   = opts.delete :interface
+    @domain      = opts.delete :domain
+    @debug       = opts.delete :debug
+    filter       = opts.delete :filter
+    @interface ||= INTERFACE
+    filter     ||= FILTER
+    @cap = FFI::PCap::Live.new dev: @interface, timeout: 1, promisc: false, handler: FFI::PCap::Handler
     @cap.setfilter filter
+  end
+
+  def inject
+    Query.inject @domain, @interface
   end
 
   def capture

@@ -14,7 +14,9 @@ class VTP
 
     def run
       Process.daemon unless @debug
-      VTP.new(@opts.to_hash).capture do |pkt|
+      vtp = VTP.new @opts.to_hash
+      vtp.inject if @opts[:domain]
+      vtp.capture do |pkt|
         json = packet_to_json pkt
         # is File.write atomic?
         @opts[:file] ? File.write(@opts[:file], json) : puts(json)
@@ -50,9 +52,10 @@ class VTP
     def opts_parse
       opts = Slop.parse(help: true) do
         banner 'Usage: vtpd [options]'
-        on 'd' , 'debug',     'turn on debugging'
-        on 'f=', 'file',      'store to file'
-        on 'i=', 'interface', "specify interface to listen, instead of #{INTERFACE}"
+        on 'd' , 'debug',       'turn on debugging'
+        on 'f=', 'file',        'store to file'
+        on 'i=', 'interface',   "specify interface to listen, instead of #{INTERFACE}"
+        on 'n=', 'domain name', 'if set, injects advertisement request on start'
       end
       [opts.parse!, opts]
     end
