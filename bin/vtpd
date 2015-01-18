@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+begin
+  require_relative '../lib/vtp/cli'
+  vtp = VTP::CLI.new
+  @debug = vtp.debug rescue true
+  vtp.run
+rescue => error
+  warn "ERROR: #{error.message}"
+  raise if @debug
+end

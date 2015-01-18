@@ -13,14 +13,16 @@ Then you could do something like this
     alias vrf="ip netns exec"
     vrf vlan_name1 /bin/zsh
     ip addr add 10.10.1.2/24 dev eth0
+    ip route add default via 10.10.1.1
     exit
     vrf vlan_name2 /bin/zsh
     ip addr add 10.10.2.2/24 dev eth0
+    ip route add default via 10.10.2.1
     ping 10.10.1.2
 
 And you're pinging through what ever lab topology is in your lab core connecting those two vlans.
 
-# Example
+# Library use
     require 'vtp'
     VTP.capture do |pkt|
       pkt.vlan.each do |vlan|
@@ -29,10 +31,36 @@ And you're pinging through what ever lab topology is in your lab core connecting
       end
     end
 
-# TODO
+# CLI use
+    root@kone:~/foo# vtpd --help
+    Usage: vtpd [options]
+        -d, --debug          turn on debugging
+        -f, --file           store to file
+        -i, --interface      specify interface to listen, instead of eth0
+        -h, --help           Display this help message.
 
-  1. gemify
-  2. support vtp1 or vtp3? (vtp1 at least will work by just removing the version check)
-  3. poll for latest vlan database, not sure how to do this, right now, on
+vtpd -f /etc/vtp.json     # would run in background and store vtp information in file
+vtpd -d                   # would run in foreground and print vtp infromation
+
+# JSON format
+    root@kone:~/foo/ruby-vtp# cat /tmp/vtp.json
+    {
+      "domain": "triotto",
+      "revision": 96,
+      "vlan": [
+        {
+          "id": 1,
+          "name": "default"
+        },
+        {
+          "id": 9,
+          "name": "vrrp"
+        },
+      # rest of the vlans
+    }
+
+# TODO
+  1. support vtp1 or vtp3? (vtp1 at least will work by just removing the version check)
+  2. poll for latest vlan database, not sure how to do this, right now, on
      initial start, you won't know the VLANs, the database is only sent on
      changes
