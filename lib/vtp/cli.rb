@@ -4,7 +4,7 @@ require_relative 'vtp'
 
 class VTP
   class CLI
-    CRASH_FILE = '/tmp/vtp.crash'
+    CRASH_FILE = 'vtp.crash'
     attr_reader :debug
 
     def initialize
@@ -29,7 +29,8 @@ class VTP
     private
 
     def crash error
-      open(CRASH_FILE, 'w') do |file|
+      require 'tempfile'
+      open(TempFile.new(CRASH_FILE), 'w') do |file|
         file.puts Time.now.utc
         file.puts error.message + ' [' + error.class.to_s + ']'
         file.puts '-' * 60
