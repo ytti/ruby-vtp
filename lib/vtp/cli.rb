@@ -30,7 +30,7 @@ class VTP
 
     def crash error
       require 'tempfile'
-      open(TempFile.new(CRASH_FILE), 'w') do |file|
+      open(Tempfile.new(CRASH_FILE), 'w') do |file|
         file.puts Time.now.utc
         file.puts error.message + ' [' + error.class.to_s + ']'
         file.puts '-' * 60
