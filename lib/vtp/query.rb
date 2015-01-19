@@ -12,7 +12,7 @@ class VTP
     end
 
     def initialize domain, interface
-      @net    = FFI::PCap::Live.new device: 'eth0', promisc: false
+      @net    = FFI::PCap::Live.new device: interface, promisc: false
       vtp     = (VTP + [domain.size]).pack('C*')
       padding = ([0]*(32-domain.size)).pack('C*')
       data    = DMAC + SMAC + TYPE + LLC + vtp + domain + padding + START
