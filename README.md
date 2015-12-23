@@ -2,23 +2,23 @@
 
 Idea is that I could have lab switch where all my edge lab devices connect 2-3
 times, as simulated edge custsomers. This switch would have one VLAN per port,
-and then trunk port to linux server. 
+and then trunk port to linux server.
 
 When ever new edge lab device is connected to switch and access VLAN created,
 linux would automatically create VLAN and network namespace for the VLAN name,
 and of course remove when VLAN is removed
 
-Then you could do something like this
+The moment VLAN is created, the 'virtual host' is created, IP address assigned,
+default GW set. So you can immediately start to ping against the 'client' PC.
+
+You could, of course, also run software at the 'client' PC:
 
     alias vrf="ip netns exec"
     vrf vlan_name1 /bin/zsh
-    ip addr add 10.10.1.2/24 dev eth0
-    ip route add default via 10.10.1.1
+    telnet server 25
     exit
     vrf vlan_name2 /bin/zsh
-    ip addr add 10.10.2.2/24 dev eth0
-    ip route add default via 10.10.2.1
-    ping 10.10.1.2
+    iperf -s -u
 
 And you're pinging through what ever lab topology is in your lab core connecting those two vlans.
 
@@ -26,6 +26,9 @@ And you're pinging through what ever lab topology is in your lab core connecting
     require 'vtp'
     require 'open3'
     class NSPOC
+      VLAN_TRUNK = "eth1"
+      MY_IP = "10"
+      GW_IP = "1"
       def initialize
         @ns = {}
         run
@@ -52,7 +55,12 @@ And you're pinging through what ever lab topology is in your lab core connecting
 
       def add name, vlan
         ip 'netns', 'add', name
-        ip 'link', 'add', 'link', 'eth0', 'netns', name, 'name', 'eth1', 'type', 'vlan', 'id', vlan.to_s
+        ip 'link', 'add', 'link', 'eth0', 'netns', name, 'name', VLAN_TRUNK, 'type', 'vlan', 'id', vlan.to_s
+        net = %w(10) + (%w(0) + vlan.to_s.scan(/.{1,2}/))[-2..-1]
+        ip = (net + [MY_IP]).join('.') + '/24'
+        gw = (net + [GW_IP]).join('.')
+        ip 'addr', 'add', ip, 'dev', 'eth0'
+        ip 'route', 'add', 'default', 'via', gw
       end
 
       def remove name, vlan
