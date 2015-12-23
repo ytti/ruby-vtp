@@ -59,8 +59,8 @@ And you're pinging through what ever lab topology is in your lab core connecting
         net = %w(10) + (%w(0) + vlan.to_s.scan(/.{1,2}/))[-2..-1]
         ip = (net + [MY_IP]).join('.') + '/24'
         gw = (net + [GW_IP]).join('.')
-        ip 'addr', 'add', ip, 'dev', 'eth0'
-        ip 'route', 'add', 'default', 'via', gw
+        ip 'netns', 'exec', name, 'ip', 'addr',  'add', ip, 'dev', 'eth0'
+        ip 'netns', 'exec', name, 'ip', 'route', 'add', 'default', 'via', gw
       end
 
       def remove name, vlan
